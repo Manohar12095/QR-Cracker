@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Cipher Playground — QR Cracker{% endblock %}
+{% block topbar_title %}Cipher Playground{% endblock %}
+
+{% block content %}
+<div class="page-header stagger-1">
+  <h1>Cipher Playground</h1>
+  <p>Encode and decode text live across classic and novelty ciphers</p>
+</div>
+
+<div class="grid-2" style="align-items:start;">
+  <!-- LEFT: Input Area -->
+  <div class="stagger-2" style="display:flex; flex-direction:column; gap:16px;">
+    
+    <div class="card" style="border-color: rgba(34,211,238,0.2);">
+      <div class="card-header">
+        <div class="card-title">📝 Input Text</div>
+        <button class="btn btn-secondary btn-icon" id="clear-input-btn" title="Clear Input">🗑️</button>
+      </div>
+      <div class="card-body">
+        <textarea class="form-control" id="cipher-input" rows="6" placeholder="Type your secret message here..."></textarea>
+      </div>
+    </div>
+
+    <!-- Mode selection -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">⚙️ Cipher Mode</div>
+      </div>
+      <div class="card-body">
+        <div class="form-group mb-16">
+          <label class="form-label" for="cipher-select">Select Cipher</label>
+          <select class="form-control" id="cipher-select">
+            <optgroup label="Classic Cryptography">
+              <option value="base64">Base64</option>
+              <option value="binary">Binary</option>
+              <option value="morse">Morse Code</option>
+              <option value="hex">Hexadecimal</option>
+              <option value="url">URL Encoding</option>
+            </optgroup>
+            <optgroup label="Substitution Shifts">
+              <option value="caesar">Caesar Cipher</option>
+              <option value="rot13">ROT13</option>
+              <option value="vigenere">Vigenère Cipher</option>
+              <option value="atbash">Atbash Cipher</option>
+            </optgroup>
+            <optgroup label="Novelty">
+              <option value="leetspeak">Leetspeak</option>
+              <option value="emoji">Emoji Substitution</option>
+              <option value="reverse">Reverse Text</option>
+            </optgroup>
+            {% if custom_ciphers %}
+            <optgroup label="Custom Substitution">
+              {% for c in custom_ciphers %}
+              <option value="custom_{{ c.id }}">{{ c.name }}</option>
+              {% endfor %}
+            </optgroup>
+            {% endif %}
+          </select>
+        </div>
+
+        <div id="key-container-caesar" class="cipher-key-container" style="display:none; margin-bottom: 16px;">
+          <label class="form-label" for="caesar-key">Shift Number (1-25)</label>
+          <input type="number" class="form-control" id="caesar-key" value="3" min="1" max="25" />
+        </div>
+        
+        <div id="key-container-vigenere" class="cipher-key-container" style="display:none; margin-bottom: 16px;">
+          <label class="form-label" for="vigenere-key">Keyword</label>
+          <input type="text" class="form-control" id="vigenere-key" value="KEY" placeholder="SECRET" />
+        </div>
+
+        <div class="toggle-group" style="width: 100%;">
+          <button type="button" class="toggle-btn active" style="flex:1;" data-action="encode" id="action-encode">🔒 Encode</button>
+          <button type="button" class="toggle-btn" style="flex:1;" data-action="decode" id="action-decode">🔓 Decode</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Cipher Builder -->
+    <div class="card stagger-3">
+      <div class="card-header">
+        <div class="card-title">🛠️ Build Custom Cipher</div>
+      </div>
+      <div class="card-body">
+        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">Create a 26-letter substitution map.</p>
+        <div class="form-group mb-12">
+          <input type="text" class="form-control" id="custom-cipher-name" placeholder="Cipher Name (e.g. My Secret Map)" />
+        </div>
+        <div class="form-group mb-12">
+          <label class="form-label">A-Z Mapping String (26 letters)</label>
+          <input type="text" class="form-control" id="custom-cipher-mapping" placeholder="ZYXWVUTSRQPONMLKJIHGFEDCBA" maxlength="26" style="font-family: monospace; letter-spacing: 2px; text-transform: uppercase;" />
+        </div>
+        <button class="btn btn-primary btn-block" id="save-custom-cipher-btn">Save Cipher</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: Output Area -->
+  <div class="stagger-3" style="display:flex; flex-direction:column; gap:16px;">
+    
+    <div class="card" style="border-color: rgba(124,58,237,0.3); height: 100%; box-shadow: var(--shadow-glow);">
+      <div class="card-header">
+        <div class="card-title">✨ Output Result</div>
+        <button class="btn btn-secondary btn-icon" id="copy-output-btn" data-copy="#cipher-output" title="Copy Output">📋</button>
+      </div>
+      <div class="card-body">
+        <div class="qr-data-display" id="cipher-output" style="max-height: 400px; height: 100%; min-height: 150px; font-size: 1.1rem; line-height: 1.6; color: var(--accent-2); overflow-y: auto;">
+          <span style="color: var(--text-muted);">Result will appear here as you type...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detector Widget -->
+    <div class="card stagger-4">
+      <div class="card-header">
+        <div class="card-title">🔍 Pattern-Based Detection</div>
+      </div>
+      <div class="card-body">
+        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">Not sure what encoding this is? Paste it above, and we'll guess it here.</p>
+        <div id="detector-result" style="padding: 10px; background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.3); border-radius: var(--radius-sm); color: var(--accent-2); font-weight: 600; font-size: 0.9rem;">
+          Waiting for input...
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/playground.js') }}"></script>
+{% endblock %}

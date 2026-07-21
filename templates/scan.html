@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Scan & Decode QR Code — QR Cracker{% endblock %}
+{% block topbar_title %}QR Scanner{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Scan & Decode</h1>
+  <p>Upload any image containing a QR code to instantly decode its content</p>
+</div>
+
+<div class="grid-2" style="align-items:start;">
+
+  <!-- Upload Area -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+    <div class="card">
+      <div class="card-body">
+        <form id="scan-form"
+              method="POST"
+              action="{{ url_for('scan_page') }}"
+              enctype="multipart/form-data">
+          <input type="file"
+                 id="file-input"
+                 name="image"
+                 accept="image/*" />
+
+          <div class="drop-zone" id="drop-zone" role="button" tabindex="0"
+               aria-label="Click or drag and drop a QR code image here">
+            <span class="drop-zone-icon">📷</span>
+            <div class="drop-zone-text">Drop your QR image here</div>
+            <div class="drop-zone-hint">or click to browse — PNG, JPG, GIF, BMP supported</div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Scanner Status -->
+    {% if scanner_available is defined and not scanner_available %}
+    <div class="flash flash-info">
+      ℹ️ <strong>Scanner libraries not installed.</strong>
+      Run <code style="background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px;">pip install opencv-python pyzbar</code> to enable QR scanning.
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Result Area -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    {% if result %}
+    <!-- Successful decode -->
+    <div class="scan-result">
+      <div class="scan-result-label">✅ Decoded Successfully</div>
+      <div class="divider" style="margin: 8px 0;"></div>
+
+      {% if result.data %}
+        <div class="scan-result-value" id="scan-decoded-value">{{ result.data }}</div>
+
+        {% if result.type %}
+        <div class="mt-8">
+          <span class="badge badge-purple">{{ result.type }}</span>
+        </div>
+        {% endif %}
+
+        <div style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm"
+                  id="copy-decoded-btn"
+                  data-copy="#scan-decoded-value">
+            📋 Copy
+          </button>
+          {% if result.data.startswith('http') %}
+          <a href="{{ result.data }}"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="btn btn-primary btn-sm"
+             id="open-decoded-url-btn">
+            🔗 Open URL
+          </a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+    {% elif error %}
+    <!-- Error -->
+    <div class="flash flash-error">
+      ❌ {{ error }}
+    </div>
+
+    {% else %}
+    <!-- Waiting state -->
+    <div class="card">
+      <div class="card-body">
+        <div class="empty-state">
+          <div class="empty-state-icon">🔍</div>
+          <div class="empty-state-text">Awaiting QR image</div>
+          <div class="empty-state-hint">Upload an image to decode its QR code content instantly.</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Tips Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">💡 Scanner Tips</div>
+      </div>
+      <div class="card-body">
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:10px;">
+          <li style="display:flex; gap:10px; font-size:0.85rem; align-items:flex-start;">
+            <span>📸</span>
+            <span class="text-secondary">Use a clear, well-lit image for best results</span>
+          </li>
+          <li style="display:flex; gap:10px; font-size:0.85rem; align-items:flex-start;">
+            <span>🔍</span>
+            <span class="text-secondary">The QR code should take up most of the image</span>
+          </li>
+          <li style="display:flex; gap:10px; font-size:0.85rem; align-items:flex-start;">
+            <span>📐</span>
+            <span class="text-secondary">Straight-on shots (no extreme angle) decode better</span>
+          </li>
+          <li style="display:flex; gap:10px; font-size:0.85rem; align-items:flex-start;">
+            <span>🌈</span>
+            <span class="text-secondary">Supports color QR codes as well as black & white</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}QR Cracker — Ultimate Tool Suite{% endblock %}
+{% block topbar_title %}Home{% endblock %}
+
+{% block content %}
+<!-- Gradient Blob Background -->
+<div class="hero-gradient-blob"></div>
+
+<!-- 1. Hero Section -->
+<div class="page-header stagger-1" style="text-align: center; padding: 60px 0 40px; position: relative;">
+  <img src="{{ url_for('static', filename='logo.png') }}" alt="QR Cracker Logo" style="max-height: 120px; margin-bottom: 24px;" />
+  <h1 style="font-size: 3rem; margin-bottom: 16px;">The Ultimate <span class="text-grad">QR & Cipher</span> Suite</h1>
+  <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px;">
+    Generate dynamic QR codes, analyze scan traffic, decode secret messages, and learn classic cryptography in one unified playground.
+  </p>
+  <div style="display: flex; gap: 16px; justify-content: center;">
+    <a href="{{ url_for('generate') }}" class="btn btn-primary btn-lg">Generate QR Code</a>
+    <a href="{{ url_for('playground') }}" class="btn btn-secondary btn-lg">Cipher Playground</a>
+  </div>
+</div>
+
+<!-- 2. Stats Bar -->
+<div class="stats-grid stagger-2" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+  <div class="stat-card purple" style="text-align: center; padding: 30px;">
+    <div class="stat-value" data-count="{{ stats.total_codes }}">{{ stats.total_codes }}</div>
+    <div class="stat-label">Dynamic QR Codes</div>
+  </div>
+  <div class="stat-card cyan" style="text-align: center; padding: 30px;">
+    <div class="stat-value" data-count="{{ stats.total_scans }}">{{ stats.total_scans }}</div>
+    <div class="stat-label">Total QR Scans</div>
+  </div>
+  <div class="stat-card green" style="text-align: center; padding: 30px;">
+    <div class="stat-value">10+</div>
+    <div class="stat-label">Ciphers & Modes</div>
+  </div>
+</div>
+
+<!-- 3. Feature Grid -->
+<div class="grid-2 mb-32 stagger-3">
+  
+  <div class="card" style="border-color: rgba(124,58,237,0.2);">
+    <div class="card-body" style="display:flex; align-items:flex-start; gap:20px;">
+      <div class="stat-icon purple" style="margin:0; font-size:1.8rem;">✨</div>
+      <div style="flex:1;">
+        <div class="card-title mb-8" style="font-size: 1.2rem;">QR Generator</div>
+        <p class="text-muted" style="font-size:0.9rem; margin-bottom:16px;">
+          Create static or dynamic QR codes for URLs, WiFi, vCards, SMS, and Email. Customize colors and error correction.
+        </p>
+        <a href="{{ url_for('generate') }}" class="btn btn-secondary btn-sm">Start Generating →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="border-color: rgba(124,58,237,0.2);">
+    <div class="card-body" style="display:flex; align-items:flex-start; gap:20px;">
+      <div class="stat-icon purple" style="margin:0; font-size:1.8rem;">📊</div>
+      <div style="flex:1;">
+        <div class="card-title mb-8" style="font-size: 1.2rem;">Dynamic Analytics</div>
+        <p class="text-muted" style="font-size:0.9rem; margin-bottom:16px;">
+          Track device types and scan counts. Update the destination URL at any time without reprinting your codes.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="border-color: rgba(34,211,238,0.2);">
+    <div class="card-body" style="display:flex; align-items:flex-start; gap:20px;">
+      <div class="stat-icon cyan" style="margin:0; font-size:1.8rem;">🔒</div>
+      <div style="flex:1;">
+        <div class="card-title mb-8" style="font-size: 1.2rem;">Cipher Playground</div>
+        <p class="text-muted" style="font-size:0.9rem; margin-bottom:16px;">
+          Learn cryptography! Live-encode Base64, Hex, Caesar, Vigenère, Atbash, Morse Code, and build custom ciphers.
+        </p>
+        <a href="{{ url_for('playground') }}" class="btn btn-secondary btn-sm">Open Playground →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="border-color: rgba(34,211,238,0.2);">
+    <div class="card-body" style="display:flex; align-items:flex-start; gap:20px;">
+      <div class="stat-icon cyan" style="margin:0; font-size:1.8rem;">🔍</div>
+      <div style="flex:1;">
+        <div class="card-title mb-8" style="font-size: 1.2rem;">Pattern Detector</div>
+        <p class="text-muted" style="font-size:0.9rem; margin-bottom:16px;">
+          Paste mystery text into the playground and let our heuristic pattern engine guess the cipher encoding type instantly.
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 4. Recent Activity (Dynamic Codes Table) -->
+<div class="card stagger-4" id="codes-table">
+  <div class="card-header">
+    <div class="card-title">Recent QR Codes</div>
+    <a href="{{ url_for('generate') }}" class="btn btn-primary btn-sm" id="dash-new-code-btn">+ New Code</a>
+  </div>
+  <div class="card-body">
+    {% if codes %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Short ID</th>
+            <th>Type</th>
+            <th>Destination</th>
+            <th>Scans</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for code in codes %}
+          <tr>
+            <td>
+              <span class="code-mono">{{ code['short_id'] }}</span>
+            </td>
+            <td>
+              <span class="badge badge-purple">{{ code['qr_type'] | upper }}</span>
+            </td>
+            <td style="max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              <span class="text-secondary" title="{{ code['target_content'] }}">{{ code['target_content'][:60] }}{% if code['target_content']|length > 60 %}…{% endif %}</span>
+            </td>
+            <td>
+              <span class="badge badge-cyan" id="scan-badge-{{ code['short_id'] }}">
+                📊 {{ scan_counts[code['short_id']] if scan_counts is defined else '0' }}
+              </span>
+            </td>
+            <td class="text-muted" style="font-size:0.8rem;">{{ code['created_at'][:10] }}</td>
+            <td>
+              <a href="{{ url_for('view_code', short_id=code['short_id']) }}"
+                 class="btn btn-secondary btn-sm"
+                 id="view-code-{{ code['short_id'] }}">View</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">🔗</div>
+      <div class="empty-state-text">No dynamic codes yet</div>
+      <div class="empty-state-hint">Create one to start tracking scans and editing destinations on the fly.</div>
+      <div class="mt-16">
+        <a href="{{ url_for('generate') }}" class="btn btn-primary" id="dash-empty-generate-btn">✨ Generate Your First Code</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 5. Footer -->
+<div class="stagger-4" style="text-align: center; margin-top: 60px; margin-bottom: 20px; font-size: 0.85rem; color: var(--text-muted);">
+  <p>QR Code Cracker v2 — Built for Cyber Security Learning & Utility.</p>
+  <p style="margin-top: 8px;">Created By <strong>S. Manohar</strong></p>
+</div>
+{% endblock %}

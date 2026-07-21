@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% block title %}Generate QR Code — QR Cracker{% endblock %}
+{% block topbar_title %}Generate QR Code{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Generate QR Code</h1>
+  <p>Create static (permanent) or dynamic (editable) QR codes in seconds</p>
+</div>
+
+<div class="grid-2" style="align-items: start;">
+
+  <!-- LEFT: Form -->
+  <div>
+    <form id="generate-form" method="POST" action="{{ url_for('generate') }}">
+
+      <!-- Hidden inputs -->
+      <input type="hidden" id="qr-type-input" name="qr_type" value="text" />
+      <input type="hidden" id="mode-input" name="mode" value="static" />
+
+      <!-- ── QR Type Tabs ── -->
+      <div class="card mb-16">
+        <div class="card-header">
+          <div class="card-title">📋 Content Type</div>
+        </div>
+        <div class="card-body">
+          <div class="tab-bar" role="tablist">
+            <button type="button" class="tab-btn active" data-type="text" id="tab-text">📝 Text</button>
+            <button type="button" class="tab-btn" data-type="url"   id="tab-url">🔗 URL</button>
+            <button type="button" class="tab-btn" data-type="email" id="tab-email">✉️ Email</button>
+            <button type="button" class="tab-btn" data-type="phone" id="tab-phone">📞 Phone</button>
+            <button type="button" class="tab-btn" data-type="sms"   id="tab-sms">💬 SMS</button>
+            <button type="button" class="tab-btn" data-type="wifi"  id="tab-wifi">📶 WiFi</button>
+            <button type="button" class="tab-btn" data-type="vcard" id="tab-vcard">👤 vCard</button>
+          </div>
+
+          <!-- TEXT -->
+          <div class="tab-panel active" id="panel-text">
+            <div class="form-group">
+              <label class="form-label" for="text-input">Your Text</label>
+              <textarea class="form-control" id="text-input" name="text"
+                        placeholder="Enter any text to encode…" rows="4"></textarea>
+            </div>
+          </div>
+
+          <!-- URL -->
+          <div class="tab-panel" id="panel-url">
+            <div class="form-group">
+              <label class="form-label" for="url-input">Website URL</label>
+              <input class="form-control" id="url-input" name="url" type="url"
+                     placeholder="https://example.com" />
+            </div>
+          </div>
+
+          <!-- EMAIL -->
+          <div class="tab-panel" id="panel-email">
+            <div class="form-group">
+              <label class="form-label" for="email-to">Recipient Email</label>
+              <input class="form-control" id="email-to" name="email" type="email"
+                     placeholder="someone@example.com" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="email-subject">Subject</label>
+              <input class="form-control" id="email-subject" name="subject" type="text"
+                     placeholder="Hello!" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="email-body">Body</label>
+              <textarea class="form-control" id="email-body" name="body"
+                        placeholder="Write your message…" rows="3"></textarea>
+            </div>
+          </div>
+
+          <!-- PHONE -->
+          <div class="tab-panel" id="panel-phone">
+            <div class="form-group">
+              <label class="form-label" for="phone-input">Phone Number</label>
+              <input class="form-control" id="phone-input" name="phone" type="tel"
+                     placeholder="+1 234 567 8900" />
+            </div>
+          </div>
+
+          <!-- SMS -->
+          <div class="tab-panel" id="panel-sms">
+            <div class="form-group">
+              <label class="form-label" for="sms-phone">Phone Number</label>
+              <input class="form-control" id="sms-phone" name="phone" type="tel"
+                     placeholder="+1 234 567 8900" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sms-message">Pre-filled Message</label>
+              <textarea class="form-control" id="sms-message" name="message"
+                        placeholder="Your message…" rows="3"></textarea>
+            </div>
+          </div>
+
+          <!-- WIFI -->
+          <div class="tab-panel" id="panel-wifi">
+            <div class="form-group">
+              <label class="form-label" for="wifi-ssid">Network Name (SSID)</label>
+              <input class="form-control" id="wifi-ssid" name="ssid" type="text"
+                     placeholder="MyHomeNetwork" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="wifi-password">Password</label>
+                <input class="form-control" id="wifi-password" name="password" type="text"
+                       placeholder="••••••••" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="wifi-encryption">Encryption</label>
+                <select class="form-control" id="wifi-encryption" name="encryption">
+                  <option value="WPA">WPA/WPA2</option>
+                  <option value="WEP">WEP</option>
+                  <option value="nopass">None</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- VCARD -->
+          <div class="tab-panel" id="panel-vcard">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="vcard-name">Full Name</label>
+                <input class="form-control" id="vcard-name" name="name" type="text"
+                       placeholder="Jane Doe" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="vcard-org">Organization</label>
+                <input class="form-control" id="vcard-org" name="org" type="text"
+                       placeholder="Acme Corp" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="vcard-phone">Phone</label>
+                <input class="form-control" id="vcard-phone" name="phone" type="tel"
+                       placeholder="+1 234 567 8900" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="vcard-email">Email</label>
+                <input class="form-control" id="vcard-email" name="email" type="email"
+                       placeholder="jane@acme.com" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Mode: Static / Dynamic ── -->
+      <div class="card mb-16">
+        <div class="card-header">
+          <div class="card-title">⚙️ Mode</div>
+        </div>
+        <div class="card-body">
+          <div class="toggle-group mb-12">
+            <button type="button" class="toggle-btn active" data-mode="static" id="mode-static-btn">🔒 Static</button>
+            <button type="button" class="toggle-btn" data-mode="dynamic" id="mode-dynamic-btn">🔄 Dynamic</button>
+          </div>
+
+          <p class="text-muted" style="font-size:0.85rem; line-height:1.6;">
+            <strong class="text-secondary">Static:</strong> Content is baked into the QR — permanent, no tracking.<br/>
+            <strong class="text-secondary">Dynamic:</strong> Code points to your server; you can edit the destination anytime and see scan analytics.
+          </p>
+
+          <div id="dynamic-note"
+               style="display:none; margin-top:14px; padding:12px 14px; background:rgba(124,58,237,0.1); border:1px solid rgba(124,58,237,0.3); border-radius:8px; font-size:0.82rem; color:#c4b5fd;">
+            ⚠️ Dynamic codes require the server to be publicly reachable for scans from other devices.
+            Works on localhost for same-machine testing only.
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Colors ── -->
+      <div class="card mb-20">
+        <div class="card-header">
+          <div class="card-title">🎨 Colors</div>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group mb-0">
+              <label class="form-label" for="fg-hex">Foreground (dots)</label>
+              <div class="color-pair color-input-wrap">
+                <input type="color" value="#000000" id="fg-color-picker"
+                       title="Foreground color" />
+                <input type="text" class="form-control" id="fg-hex" name="fg_color"
+                       value="#000000" maxlength="7" placeholder="#000000" />
+              </div>
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="bg-hex">Background</label>
+              <div class="color-pair color-input-wrap">
+                <input type="color" value="#ffffff" id="bg-color-picker"
+                       title="Background color" />
+                <input type="text" class="form-control" id="bg-hex" name="bg_color"
+                       value="#ffffff" maxlength="7" placeholder="#ffffff" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Submit ── -->
+      <button type="submit" class="btn btn-primary btn-lg btn-block" id="generate-submit-btn">
+        ✨ Generate QR Code
+      </button>
+
+    </form>
+  </div>
+
+  <!-- RIGHT: Info Panel -->
+  <div>
+    <div class="card mb-16">
+      <div class="card-body" style="text-align:center; padding:36px 24px;">
+        <div style="font-size:5rem; margin-bottom:16px; opacity:0.4;">⚡</div>
+        <div class="card-title text-center mb-8" style="justify-content:center;">Your QR code will appear here</div>
+        <p class="text-muted" style="font-size:0.85rem;">Fill in the form and click <strong>Generate</strong></p>
+      </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">💡 Tips</div>
+      </div>
+      <div class="card-body">
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:12px;">
+          <li style="display:flex; gap:10px; font-size:0.85rem;">
+            <span>🔒</span>
+            <span class="text-secondary"><strong class="text-primary">Static QR:</strong> Best for print materials where the destination never changes.</span>
+          </li>
+          <li style="display:flex; gap:10px; font-size:0.85rem;">
+            <span>🔄</span>
+            <span class="text-secondary"><strong class="text-primary">Dynamic QR:</strong> Perfect for campaigns — edit the link without reprinting.</span>
+          </li>
+          <li style="display:flex; gap:10px; font-size:0.85rem;">
+            <span>🎨</span>
+            <span class="text-secondary">High contrast colors (dark on light) scan more reliably.</span>
+          </li>
+          <li style="display:flex; gap:10px; font-size:0.85rem;">
+            <span>📶</span>
+            <span class="text-secondary">WiFi QR codes let guests connect instantly — no typing needed.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="QR Cracker — Generate, manage and track static and dynamic QR codes with advanced analytics." />
+  <title>{% block title %}QR Cracker{% endblock %}</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+
+  <!-- Preconnect Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Chart.js for analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- App Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <script>
+    (function () {
+      const savedTheme = localStorage.getItem('qr-cracker-theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      }
+    })();
+  </script>
+
+  {% block head %}{% endblock %}
+</head>
+
+<body>
+
+  <!-- Mobile Overlay -->
+  <div id="sidebar-overlay"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:99; backdrop-filter:blur(4px);">
+  </div>
+
+  <!-- ======== SIDEBAR ======== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo" style="display: flex; align-items: center; justify-content: center; padding: 24px;">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="QR Cracker Logo"
+        style="max-height: 48px; max-width: 100%;" />
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+
+      <a href="{{ url_for('index') }}" class="nav-item {% if request.endpoint == 'index' %}active{% endif %}"
+        id="nav-dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+
+      <a href="{{ url_for('generate') }}" class="nav-item {% if request.endpoint == 'generate' %}active{% endif %}">
+        <span class="nav-icon">✨</span> Generate QR
+      </a>
+
+      <a href="{{ url_for('playground') }}" class="nav-item {% if request.endpoint == 'playground' %}active{% endif %}">
+        <span class="nav-icon">🔒</span> Playground
+      </a>
+      <div class="nav-section-label" style="margin-top: 10px;">Tools</div>
+      <a href="{{ url_for('scan_page') }}" class="nav-item {% if request.endpoint == 'scan_page' %}active{% endif %}"
+        id="nav-scan">
+        <span class="nav-icon">📷</span> Scan / Decode
+      </a>
+
+      <div class="nav-section-label" style="margin-top: 10px;">Appearance</div>
+      <div style="padding: 0 14px;">
+        <select id="theme-select" class="form-control" style="font-size: 0.85rem; padding: 8px;">
+          <option value="dark">Dark Theme (Default)</option>
+          <option value="light">Light Theme</option>
+          <option value="cyberpunk">Cyberpunk</option>
+          <option value="ocean">Ocean</option>
+        </select>
+      </div>
+
+      <div class="nav-section-label" style="margin-top:8px;">Dynamic Codes</div>
+
+      <a href="{{ url_for('index') }}#codes-table" class="nav-item" id="nav-codes">
+        <span class="nav-icon">🔗</span> My Codes
+      </a>
+    </nav>
+
+    <div class="sidebar-footer" style="text-align: center; padding-bottom: 20px;">
+      <div class="version-badge" style="display: inline-block; margin-bottom: 8px;">
+        <span class="dot"></span>
+        <span>Running on Manohar Platform</span>
+      </div>
+      <div style="font-size: 0.75rem; color: var(--text-muted);">
+        Created By <strong>S. Manohar</strong>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======== MAIN ======== -->
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <button id="sidebar-toggle" class="btn btn-secondary btn-icon" style="display:none;"
+          aria-label="Toggle sidebar">☰</button>
+        <span class="topbar-title">{% block topbar_title %}QR Cracker{% endblock %}</span>
+      </div>
+      <div class="topbar-actions">
+        <a href="{{ url_for('generate') }}" class="btn btn-primary btn-sm" id="topbar-generate-btn">
+          ✨ New QR Code
+        </a>
+      </div>
+    </header>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+      <div class="flash flash-{{ category if category in ['success','error','info'] else 'info' }}" role="alert">
+        {% if category == 'success' %}✅{% elif category == 'error' %}❌{% else %}ℹ️{% endif %}
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Page Content -->
+    <main class="page-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- App JS -->
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+  <!-- Mobile sidebar toggle visibility -->
+  <script>
+    (function () {
+      const toggle = document.getElementById('sidebar-toggle');
+      const overlay = document.getElementById('sidebar-overlay');
+      if (window.innerWidth <= 640) {
+        if (toggle) toggle.style.display = 'flex';
+        if (overlay) overlay.style.display = 'block';
+      }
+      window.addEventListener('resize', function () {
+        if (!toggle) return;
+        toggle.style.display = window.innerWidth <= 640 ? 'flex' : 'none';
+        if (overlay) overlay.style.display = window.innerWidth <= 640 ? 'block' : 'none';
+      });
+    })();
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
+
+</html>

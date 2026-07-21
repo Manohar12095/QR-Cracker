@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}{{ code['short_id'] }} — Dynamic Code — QR Cracker{% endblock %}
+{% block topbar_title %}Dynamic Code: {{ code['short_id'] }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Dynamic QR Code</h1>
+  <p>Short ID: <span class="code-mono">{{ code['short_id'] }}</span> — Created {{ code['created_at'][:10] }}</p>
+</div>
+
+<div class="grid-2" style="align-items:start;">
+
+  <!-- LEFT COLUMN -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <!-- QR Image -->
+    <div class="qr-display">
+      <div class="qr-image-wrap">
+        <img src="{{ url_for('static', filename='generated/' + code['filename']) }}"
+             alt="Dynamic QR Code"
+             id="dynamic-qr-image"
+             width="240" height="240"
+             style="image-rendering:pixelated;" />
+      </div>
+
+      <div style="width:100%;">
+        <div class="form-label mb-8">Redirect URL (what's baked in the code)</div>
+        <div class="copy-field">
+          <input type="text" class="form-control"
+                 id="redirect-url-field"
+                 value="{{ base_url }}/r/{{ code['short_id'] }}"
+                 readonly />
+          <button class="btn btn-secondary btn-icon"
+                  id="copy-redirect-btn"
+                  data-copy="#redirect-url-field"
+                  title="Copy redirect URL">📋</button>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; width:100%;">
+        <a href="{{ url_for('download_qr', filename=code['filename']) }}"
+           class="btn btn-primary"
+           id="download-dynamic-btn"
+           download>⬇️ Download PNG</a>
+        <a href="{{ url_for('generate') }}"
+           class="btn btn-secondary"
+           id="detail-new-code-btn">✨ New Code</a>
+      </div>
+    </div>
+
+    <!-- Current Destination -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🎯 Current Destination</div>
+        <span class="badge badge-cyan">{{ code['qr_type'] | upper }}</span>
+      </div>
+      <div class="card-body">
+        <div class="qr-data-display" id="current-destination" style="max-height:none;">{{ code['target_content'] }}</div>
+      </div>
+    </div>
+
+    <!-- Edit Destination -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">✏️ Edit Destination</div>
+      </div>
+      <div class="card-body">
+        <p class="text-muted mb-16" style="font-size:0.85rem;">
+          Change where scans redirect — no need to reprint the QR code.
+        </p>
+        <form method="POST"
+              action="{{ url_for('edit_code', short_id=code['short_id']) }}"
+              id="edit-destination-form">
+          <div class="form-group">
+            <label class="form-label" for="new-target-input">New Destination</label>
+            <textarea class="form-control"
+                      id="new-target-input"
+                      name="new_target"
+                      rows="3"
+                      placeholder="Enter new URL or content…">{{ code['target_content'] }}</textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="save-destination-btn">
+            💾 Save Destination
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <!-- Analytics -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📊 Scan Analytics</div>
+        <span class="badge badge-purple">{{ scan_count }} total</span>
+      </div>
+      <div class="card-body">
+        {% if scan_count > 0 %}
+          {% set mobile_count  = scans | selectattr('device_type','eq','mobile')  | list | length %}
+          {% set desktop_count = scans | selectattr('device_type','eq','desktop') | list | length %}
+          <div class="chart-container">
+            <canvas id="scan-chart"
+                    data-mobile="{{ mobile_count }}"
+                    data-desktop="{{ desktop_count }}"></canvas>
+          </div>
+          <div style="display:flex; justify-content:center; gap:24px; margin-top:16px;">
+            <div style="text-align:center;">
+              <div class="stat-value" style="font-size:1.5rem;" data-count="{{ mobile_count }}">{{ mobile_count }}</div>
+              <div class="stat-label">📱 Mobile</div>
+            </div>
+            <div style="text-align:center;">
+              <div class="stat-value" style="font-size:1.5rem;" data-count="{{ desktop_count }}">{{ desktop_count }}</div>
+              <div class="stat-label">🖥️ Desktop</div>
+            </div>
+          </div>
+        {% else %}
+          <div class="empty-state" style="padding:30px 16px;">
+            <div class="empty-state-icon">📊</div>
+            <div class="empty-state-text">No scans yet</div>
+            <div class="empty-state-hint">Share the QR code to start collecting analytics.</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Scan Log -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📋 Scan Log</div>
+      </div>
+      <div class="card-body" style="padding-top:0;">
+        {% if scans %}
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Timestamp</th>
+                <th>Device</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for scan in scans %}
+              <tr class="scan-log-row">
+                <td class="text-muted" style="font-size:0.8rem;">{{ loop.index }}</td>
+                <td>{{ scan['scanned_at'][:19].replace('T',' ') }}</td>
+                <td>
+                  {% if scan['device_type'] == 'mobile' %}
+                    <span class="badge badge-purple">📱 Mobile</span>
+                  {% else %}
+                    <span class="badge badge-cyan">🖥️ Desktop</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding:24px 16px;">
+          <div class="empty-state-hint">No scans recorded yet.</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="card" style="border-color:rgba(239,68,68,0.2);">
+      <div class="card-header">
+        <div class="card-title" style="color:#fca5a5;">⚠️ Danger Zone</div>
+      </div>
+      <div class="card-body">
+        <p class="text-muted mb-16" style="font-size:0.85rem;">
+          Permanently deletes this QR code and all its scan data. This cannot be undone.
+        </p>
+        <form method="POST"
+              action="{{ url_for('delete_code', short_id=code['short_id']) }}"
+              id="delete-code-form">
+          <button type="submit"
+                  class="btn btn-danger btn-block"
+                  id="delete-code-btn"
+                  data-confirm="Are you sure? This will permanently delete this QR code and all {{ scan_count }} scan records.">
+            🗑️ Delete This Code
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

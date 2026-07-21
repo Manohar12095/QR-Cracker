@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}QR Code Generated — QR Cracker{% endblock %}
+{% block topbar_title %}Static QR Result{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>QR Code Generated ✅</h1>
+  <p>Your static QR code is ready — download and use it anywhere</p>
+</div>
+
+<div class="grid-2" style="align-items:start;">
+
+  <!-- QR Image Display -->
+  <div class="qr-display">
+    <div class="qr-image-wrap">
+      <img src="{{ url_for('static', filename='generated/' + filename) }}"
+           alt="Generated QR Code"
+           id="qr-result-image"
+           width="260" height="260"
+           style="image-rendering:pixelated;" />
+    </div>
+
+    <div style="width:100%;">
+      <div class="form-label mb-8">Encoded Data</div>
+      <div class="qr-data-display" id="qr-encoded-data">{{ data }}</div>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+      <a href="{{ url_for('download_qr', filename=filename) }}"
+         class="btn btn-primary"
+         id="download-qr-btn"
+         download>
+        ⬇️ Download PNG
+      </a>
+      <button class="btn btn-secondary"
+              id="copy-data-btn"
+              data-copy="#qr-encoded-data">
+        📋 Copy Data
+      </button>
+      <a href="{{ url_for('generate') }}"
+         class="btn btn-secondary"
+         id="generate-another-btn">
+        ✨ Generate Another
+      </a>
+    </div>
+  </div>
+
+  <!-- Details Panel -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <!-- Mode Badge -->
+    <div class="card">
+      <div class="card-body">
+        <div class="flex items-center gap-12 mb-16">
+          <span class="badge badge-purple" style="font-size:0.85rem; padding:6px 14px;">🔒 STATIC</span>
+          <span class="text-muted" style="font-size:0.85rem;">Content permanently baked in</span>
+        </div>
+        <p class="text-secondary" style="font-size:0.875rem; line-height:1.7;">
+          This QR code is <strong class="text-primary">static</strong> — the content is encoded directly into the image.
+          It works offline, never expires, and doesn't require a server.
+        </p>
+      </div>
+    </div>
+
+    <!-- File Info -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📄 File Info</div>
+      </div>
+      <div class="card-body">
+        <table style="width:100%;">
+          <tbody>
+            <tr>
+              <td class="text-muted" style="padding:8px 0; font-size:0.8rem; width:40%;">Filename</td>
+              <td class="text-secondary" style="font-size:0.85rem; font-family:monospace;">{{ filename }}</td>
+            </tr>
+            <tr>
+              <td class="text-muted" style="padding:8px 0; font-size:0.8rem;">Format</td>
+              <td class="text-secondary" style="font-size:0.85rem;">PNG Image</td>
+            </tr>
+            <tr>
+              <td class="text-muted" style="padding:8px 0; font-size:0.8rem;">Type</td>
+              <td><span class="badge badge-cyan">{{ mode | upper }}</span></td>
+            </tr>
+            <tr>
+              <td class="text-muted" style="padding:8px 0; font-size:0.8rem;">Data length</td>
+              <td class="text-secondary" style="font-size:0.85rem;">{{ data | length }} characters</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Next Steps -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🚀 Next Steps</div>
+      </div>
+      <div class="card-body">
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:10px;">
+          <li style="display:flex; gap:10px; font-size:0.85rem; align-items:flex-start;">
+            <span>1️⃣</span>
+            <span class="text-secondary">Download the PNG using the button above</span>
+          </li>
+          <li style="display:flex; gap:10px; font-size:0.85rem; align-items:flex-start;">
+            <span>2️⃣</span>
+            <span class="text-secondary">Embed it in documents, print it, or share it digitally</span>
+          </li>
+          <li style="display:flex; gap:10px; font-size:0.85rem; align-items:flex-start;">
+            <span>3️⃣</span>
+            <span class="text-secondary">Need scan analytics? Generate a <strong class="text-primary">Dynamic</strong> code instead</span>
+          </li>
+        </ul>
+        <div class="mt-16">
+          <a href="{{ url_for('generate') }}"
+             class="btn btn-secondary btn-block"
+             id="try-dynamic-btn">
+            🔄 Try Dynamic QR Instead
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

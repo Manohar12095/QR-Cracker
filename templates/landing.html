@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Code Content — QR Cracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+<div class="landing-wrap">
+  <div class="landing-card">
+
+    <div class="landing-icon">
+      {% if code['qr_type'] == 'wifi' %}📶
+      {% elif code['qr_type'] == 'vcard' %}👤
+      {% elif code['qr_type'] == 'email' %}✉️
+      {% elif code['qr_type'] == 'phone' %}📞
+      {% elif code['qr_type'] == 'sms' %}💬
+      {% else %}📝{% endif %}
+    </div>
+
+    <h1>
+      {% if code['qr_type'] == 'wifi' %}WiFi Network
+      {% elif code['qr_type'] == 'vcard' %}Contact Card
+      {% elif code['qr_type'] == 'email' %}Send an Email
+      {% elif code['qr_type'] == 'phone' %}Call this Number
+      {% elif code['qr_type'] == 'sms' %}Send an SMS
+      {% else %}QR Code Content{% endif %}
+    </h1>
+
+    <p class="text-muted" style="font-size:0.85rem; margin-bottom:12px;">Scanned via QR Cracker dynamic link</p>
+
+    <div class="landing-type-label">
+      <span class="badge badge-purple">{{ code['qr_type'] | upper }}</span>
+    </div>
+
+    <div class="landing-content">{{ code['target_content'] }}</div>
+
+    {% if code['qr_type'] == 'wifi' %}
+    <p class="text-muted" style="font-size:0.82rem; margin-bottom:16px;">
+      Use the credentials above to connect to the Wi-Fi network in your device settings.
+    </p>
+    {% elif code['qr_type'] == 'vcard' %}
+    <p class="text-muted" style="font-size:0.82rem; margin-bottom:16px;">
+      Save this contact card to your phone's address book.
+    </p>
+    {% elif code['qr_type'] == 'email' %}
+    <a href="{{ code['target_content'] }}" class="btn btn-primary btn-block" id="landing-email-btn">
+      ✉️ Open Email App
+    </a>
+    {% elif code['qr_type'] == 'phone' %}
+    <a href="{{ code['target_content'] }}" class="btn btn-primary btn-block" id="landing-call-btn">
+      📞 Call Now
+    </a>
+    {% elif code['qr_type'] == 'sms' %}
+    <a href="{{ code['target_content'] }}" class="btn btn-primary btn-block" id="landing-sms-btn">
+      💬 Send SMS
+    </a>
+    {% else %}
+    <button class="btn btn-secondary btn-block"
+            id="landing-copy-btn"
+            data-copy=".landing-content">
+      📋 Copy Content
+    </button>
+    {% endif %}
+
+    <div class="divider"></div>
+
+    <p class="text-muted" style="font-size:0.75rem;">
+      Powered by <strong style="color:#7c3aed;">QR Cracker</strong>
+    </p>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
