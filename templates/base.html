@@ -37,9 +37,7 @@
 <body>
 
   <!-- Mobile Overlay -->
-  <div id="sidebar-overlay"
-    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:99; backdrop-filter:blur(4px);">
-  </div>
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
   <!-- ======== SIDEBAR ======== -->
   <aside class="sidebar" id="sidebar">
@@ -103,7 +101,7 @@
     <!-- Topbar -->
     <header class="topbar">
       <div style="display:flex; align-items:center; gap:14px;">
-        <button id="sidebar-toggle" class="btn btn-secondary btn-icon" style="display:none;"
+        <button id="sidebar-toggle" class="btn btn-secondary btn-icon sidebar-toggle-btn"
           aria-label="Toggle sidebar">☰</button>
         <span class="topbar-title">{% block topbar_title %}QR Cracker{% endblock %}</span>
       </div>
@@ -137,22 +135,7 @@
   <!-- App JS -->
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 
-  <!-- Mobile sidebar toggle visibility -->
-  <script>
-    (function () {
-      const toggle = document.getElementById('sidebar-toggle');
-      const overlay = document.getElementById('sidebar-overlay');
-      if (window.innerWidth <= 640) {
-        if (toggle) toggle.style.display = 'flex';
-        if (overlay) overlay.style.display = 'block';
-      }
-      window.addEventListener('resize', function () {
-        if (!toggle) return;
-        toggle.style.display = window.innerWidth <= 640 ? 'flex' : 'none';
-        if (overlay) overlay.style.display = window.innerWidth <= 640 ? 'block' : 'none';
-      });
-    })();
-  </script>
+  <!-- Mobile sidebar visibility is handled via CSS and app.js -->
 
   {% block scripts %}{% endblock %}
 </body>

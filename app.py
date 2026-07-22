@@ -26,6 +26,8 @@ except Exception:
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-change-this-in-production"
+# Optimize performance by caching static files
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000
 
 # Route to serve generated images from /tmp on Vercel serverless
 @app.route("/static/generated/<path:filename>")
